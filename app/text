@@ -1,0 +1,101 @@
+Sure, here are the steps to create a user detail page using Laravel and React:
+Create a new Laravel project using the following command:
+laravel new user-detail
+
+Install Laravel authentication by running the following command:
+php artisan make:auth
+
+You should now see login and registration pages at http://localhost:8000/login and http://localhost:8000/register.
+Create a UserController by running the following command:
+php artisan make:controller UserController
+
+Create a route in routes/web.php that points to the UserController:
+Route::get('/users/{id}', 'UserController@show');
+
+Inside the show method of UserController, retrieve the user record from the database using the $id parameter:
+public function show($id)
+{
+    $user = User::findOrFail($id);
+
+    return view('user-detail', ['user' => $user]);
+}
+
+Create a user detail view in resources/views/user-detail.blade.php:
+@extends('layouts.app')
+
+@section('content')
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">{{ $user->name }}</div>
+
+                    <div class="card-body">
+                        <p><strong>Email:</strong> {{ $user->email }}</p>
+                        <p><strong>Joined:</strong> {{ $user->created_at->format('F j, Y, g:i a') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+Install React into the project by running the following command in the terminal:
+npm install --save react react-dom
+
+Create a resources/js/components/UserDetail.js file for the React component:
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
+
+function UserDetail(props) {
+    const [user, setUser] = useState({});
+
+    useEffect(() => {
+        fetch(`/api/users/${props.match.params.id}`)
+            .then(response => response.json())
+            .then(data => setUser(data));
+    }, [props.match.params.id]);
+
+    return (
+        <div className="container">
+            <div className="row justify-content-center">
+                <div className="col-md-8">
+                    <div className="card">
+                        <div className="card-header">{ user.name }</div>
+
+                        <div className="card-body">
+                            <p><strong>Email:</strong> { user.email }</p>
+                            <p><strong>Joined:</strong> { user.created_at }</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default UserDetail;
+
+if (document.getElementById('user-detail')) {
+    ReactDOM.render(<UserDetail />, document.getElementById('user-detail'));
+}
+
+Create an API route in routes/api.php that returns user details:
+Route::get('/users/{id}', function ($id) {
+    $user = User::findOrFail($id);
+
+    return $user;
+});
+
+Add the React component to the user detail view by including a script tag:
+@section('content')
+    <div id="user-detail"></div>
+
+    <script src="{{ asset('js/app.js') }}"></script>
+@endsection
+
+Compile the React code using Laravel Mix by running the following command in the terminal:
+npm run dev
+
+Visit the user detail page by going to http://localhost:8000/users/{id}. You should now see the user's name, email, and join date displayed on the page.
+
